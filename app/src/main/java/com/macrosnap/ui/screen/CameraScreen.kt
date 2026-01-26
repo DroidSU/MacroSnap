@@ -6,6 +6,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,7 +42,7 @@ fun CameraScreen(onImageCaptured: (Bitmap) -> Unit) {
         val cameraProviderFuture = androidx.camera.lifecycle.ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-            val preview = androidx.camera.core.Preview.Builder().build().also {
+            val preview = Preview.Builder().build().also {
                 it.surfaceProvider = previewView.surfaceProvider
             }
 
