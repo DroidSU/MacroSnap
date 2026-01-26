@@ -96,6 +96,9 @@ dependencies {
     
     // Serialization
     implementation(libs.kotlinx.serialization.json)
+    
+    // Lottie
+    implementation(libs.lottie.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

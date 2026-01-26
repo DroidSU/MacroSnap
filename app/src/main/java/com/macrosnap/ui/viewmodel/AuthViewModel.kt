@@ -1,8 +1,10 @@
 package com.macrosnap.ui.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialException
@@ -10,11 +12,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.macrosnap.BuildConfig
+import com.macrosnap.data.repository.MealRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -28,7 +32,7 @@ sealed class AuthState {
     data class Error(val message: String) : AuthState()
 }
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel(private val repository: MealRepository) : ViewModel() {
     private val auth: FirebaseAuth = Firebase.auth
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState = _authState.asStateFlow()
@@ -60,17 +64,35 @@ class AuthViewModel : ViewModel() {
                 val result = credentialManager.getCredential(context, request)
                 handleSignIn(result)
             } catch (e: GetCredentialException) {
+                Log.e("AuthViewModel", "Credential Manager error", e)
                 _authState.value = AuthState.Error(e.message ?: "Google Sign-In failed")
             } catch (e: Exception) {
+                Log.e("AuthViewModel", "Unexpected error", e)
                 _authState.value = AuthState.Error(e.message ?: "An unexpected error occurred")
             }
         }
     }
 
     private suspend fun handleSignIn(result: GetCredentialResponse) {
-        val credential = result.credential
-        if (credential is GoogleIdTokenCredential) {
-            val firebaseCredential = GoogleAuthProvider.getCredential(credential.idToken, null)
+        val googleIdTokenCredential = when (val credential = result.credential) {
+            is GoogleIdTokenCredential -> credential
+            is CustomCredential -> {
+                if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    try {
+                        GoogleIdTokenCredential.createFrom(credential.data)
+                    } catch (e: GoogleIdTokenParsingException) {
+                        Log.e("AuthViewModel", "Parsing error", e)
+                        null
+                    }
+                } else {
+                    null
+                }
+            }
+            else -> null
+        }
+
+        if (googleIdTokenCredential != null) {
+            val firebaseCredential = GoogleAuthProvider.getCredential(googleIdTokenCredential.idToken, null)
             try {
                 auth.signInWithCredential(firebaseCredential)
                 _authState.value = AuthState.Success
@@ -78,7 +100,7 @@ class AuthViewModel : ViewModel() {
                 _authState.value = AuthState.Error(e.message ?: "Firebase Authentication failed")
             }
         } else {
-            _authState.value = AuthState.Error("Unexpected credential type")
+            _authState.value = AuthState.Error("Unexpected or invalid credential type")
         }
     }
 

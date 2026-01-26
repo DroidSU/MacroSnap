@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+
     <uses-feature android:name="android.hardware.camera" />
 
     <application
@@ -16,7 +16,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MacroSnap">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.DashboardActivity"
+            android:exported="false"
+            android:label="@string/title_activity_dashboard"
+            android:theme="@style/Theme.MacroSnap" />
+        <activity
+            android:name=".ui.AuthenticationActivity"
+            android:exported="false"
+            android:label="@string/title_activity_authentication"
+            android:theme="@style/Theme.MacroSnap" />
+        <activity
+            android:name=".ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.MacroSnap">

@@ -1,4 +1,4 @@
-package com.macrosnap
+package com.macrosnap.ui
 
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -20,8 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -34,13 +32,13 @@ import com.macrosnap.data.remote.GeminiService
 import com.macrosnap.data.repository.MealRepository
 import com.macrosnap.ui.screen.CameraScreen
 import com.macrosnap.ui.screen.HistoryScreen
-import com.macrosnap.ui.screen.LoginScreen
 import com.macrosnap.ui.screen.ResultScreen
 import com.macrosnap.ui.theme.MacroSnapTheme
+import com.macrosnap.ui.viewmodel.MacroSnapViewModelFactory
 import com.macrosnap.ui.viewmodel.MealUiState
 import com.macrosnap.ui.viewmodel.MealViewModel
 
-class MainActivity : ComponentActivity() {
+class DashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -48,12 +46,7 @@ class MainActivity : ComponentActivity() {
         val database = MealDatabase.getDatabase(this)
         val geminiService = GeminiService()
         val repository = MealRepository(geminiService, database.mealDao())
-        
-        @Suppress("UNCHECKED_CAST") val viewModelFactory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return MealViewModel(repository) as T
-            }
-        }
+        val viewModelFactory = MacroSnapViewModelFactory(repository)
 
         setContent {
             MacroSnapTheme {
@@ -61,7 +54,7 @@ class MainActivity : ComponentActivity() {
                 val mealViewModel: MealViewModel = viewModel(factory = viewModelFactory)
                 val uiState by mealViewModel.uiState.collectAsState()
                 var capturedBitmap by remember { mutableStateOf<Bitmap?>(null) }
-                
+
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
                 val showBottomBar = currentDestination?.route in listOf("camera", "history")
@@ -71,24 +64,38 @@ class MainActivity : ComponentActivity() {
                         if (showBottomBar) {
                             NavigationBar {
                                 NavigationBarItem(
-                                    icon = { Icon(Icons.Default.PhotoCamera, contentDescription = null) },
+                                    icon = {
+                                        Icon(
+                                            Icons.Default.PhotoCamera,
+                                            contentDescription = null
+                                        )
+                                    },
                                     label = { Text("Scanner") },
                                     selected = currentDestination?.hierarchy?.any { it.route == "camera" } == true,
                                     onClick = {
                                         navController.navigate("camera") {
-                                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
                                             launchSingleTop = true
                                             restoreState = true
                                         }
                                     }
                                 )
                                 NavigationBarItem(
-                                    icon = { Icon(Icons.Default.History, contentDescription = null) },
+                                    icon = {
+                                        Icon(
+                                            Icons.Default.History,
+                                            contentDescription = null
+                                        )
+                                    },
                                     label = { Text("History") },
                                     selected = currentDestination?.hierarchy?.any { it.route == "history" } == true,
                                     onClick = {
                                         navController.navigate("history") {
-                                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
                                             launchSingleTop = true
                                             restoreState = true
                                         }
@@ -100,16 +107,9 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "login",
+                        startDestination = "camera",
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable("login") {
-                            LoginScreen(onLoginSuccess = {
-                                navController.navigate("camera") {
-                                    popUpTo("login") { inclusive = true }
-                                }
-                            })
-                        }
                         composable("camera") {
                             CameraScreen(onImageCaptured = { bitmap ->
                                 capturedBitmap = bitmap
