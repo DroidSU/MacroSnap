@@ -6,9 +6,9 @@ import kotlinx.serialization.Serializable
 data class MealAnalysis(
     val dishName: String,
     val calories: Int,
-    val protein: Double,
-    val carbs: Double,
-    val fats: Double,
+    val protein: Int,
+    val carbs: Int,
+    val fats: Int,
     val healthierSwap: String? = null,
     val portionTweak: String? = null
 )

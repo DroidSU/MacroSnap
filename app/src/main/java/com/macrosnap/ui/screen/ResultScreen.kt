@@ -25,8 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.macrosnap.data.model.MealAnalysis
 import com.macrosnap.ui.components.MacroCard
+import com.macrosnap.ui.theme.MacroSnapTheme
 import com.macrosnap.ui.viewmodel.MealUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,5 +103,26 @@ fun ResultScreen(
                 else -> {}
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ResultScreenPreview() {
+    MacroSnapTheme {
+        ResultScreen(
+            uiState = MealUiState.Success(
+                MealAnalysis(
+                    dishName = "Chicken Pasta",
+                    calories = 550,
+                    protein = 30,
+                    carbs = 60,
+                    fats = 20,
+                )
+            ),
+            capturedImage = null,
+            onBack = {},
+            onSave = {}
+        )
     }
 }

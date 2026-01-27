@@ -16,25 +16,25 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.macrosnap.data.local.MealEntity
-import com.macrosnap.ui.viewmodel.MealViewModel
+import com.macrosnap.ui.theme.MacroSnapTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun HistoryScreen(viewModel: MealViewModel) {
-    val history by viewModel.history.collectAsState()
-    val weeklyMeals by viewModel.weeklyMeals.collectAsState()
-
+fun HistoryScreen(
+    history: List<MealEntity>,
+    weeklyMeals: List<MealEntity>
+) {
     val totalWeeklyCalories = weeklyMeals.sumOf { it.calories }
-    val avgWeeklyCalories = if (weeklyMeals.isNotEmpty()) totalWeeklyCalories / weeklyMeals.size else 0
+    val avgWeeklyCalories =
+        if (weeklyMeals.isNotEmpty()) totalWeeklyCalories / weeklyMeals.size else 0
 
     Column(
         modifier = Modifier
@@ -46,7 +46,7 @@ fun HistoryScreen(viewModel: MealViewModel) {
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
-        
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -54,8 +54,14 @@ fun HistoryScreen(viewModel: MealViewModel) {
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Average Daily: $avgWeeklyCalories kcal", style = MaterialTheme.typography.bodyLarge)
-                Text(text = "Total Meals this week: ${weeklyMeals.size}", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = "Average Daily: $avgWeeklyCalories kcal",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = "Total Meals this week: ${weeklyMeals.size}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
 
@@ -96,13 +102,55 @@ fun MealHistoryItem(meal: MealEntity) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = meal.dishName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                Text(
+                    text = meal.dishName,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
                 Text(text = dateString, style = MaterialTheme.typography.labelSmall)
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(text = "${meal.calories} kcal", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-                Text(text = "P: ${meal.protein}g | C: ${meal.carbs}g", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    text = "${meal.calories} kcal",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "P: ${meal.protein}g | C: ${meal.carbs}g",
+                    style = MaterialTheme.typography.labelSmall
+                )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HistoryScreenPreview() {
+    val mockMeals = listOf(
+        MealEntity(
+            id = 1,
+            dishName = "Oatmeal",
+            calories = 300,
+            protein = 10,
+            carbs = 50,
+            fats = 15,
+            timestamp = System.currentTimeMillis()
+        ),
+        MealEntity(
+            id = 2,
+            dishName = "Chicken Salad",
+            calories = 450,
+            protein = 35,
+            carbs = 15,
+            fats = 15,
+            timestamp = System.currentTimeMillis()
+        )
+    )
+    MacroSnapTheme {
+        HistoryScreen(
+            history = mockMeals,
+            weeklyMeals = mockMeals
+        )
     }
 }

@@ -8,8 +8,8 @@ data class MealEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val dishName: String,
     val calories: Int,
-    val protein: Double,
-    val carbs: Double,
-    val fats: Double,
+    val protein: Int,
+    val carbs: Int,
+    val fats: Int,
     val timestamp: Long = System.currentTimeMillis()
 )

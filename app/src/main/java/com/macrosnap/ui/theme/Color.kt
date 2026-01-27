@@ -2,42 +2,41 @@ package com.macrosnap.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Indigo600 = Color(0xFF4F46E5)
-val Indigo700 = Color(0xFF4338CA)
-val Indigo50 = Color(0xFFEEF2FF)
+/**
+ * Modern & Elegant Palette - "Nordic Night & Ethereal Day"
+ * 
+ * A sophisticated color scheme using deep oceanic teals, 
+ * soft lavenders, and crisp slate tones for a professional, 
+ * modern 3D aesthetic.
+ */
 
-val Emerald500 = Color(0xFF10B981)
-val Emerald600 = Color(0xFF059669)
-
-val Slate900 = Color(0xFF0F172A)
-val Slate800 = Color(0xFF1E293B)
-val Slate700 = Color(0xFF334155)
-val Slate50 = Color(0xFFF8FAFC)
-
-val Rose500 = Color(0xFFF43F5E)
+// Core Colors
+val DeepOcean = Color(0xFF0F172A)     // Slate 900
+val MutedLavender = Color(0xFF818CF8) // Indigo 400
+val EtherealBlue = Color(0xFF38BDF8)  // Sky 400
+val CrispMint = Color(0xFF34D399)     // Emerald 400
+val SoftRose = Color(0xFFFB7185)      // Rose 400
 
 // Light Theme
-val PrimaryLight = Indigo600
-val OnPrimaryLight = Color.White
-val PrimaryContainerLight = Indigo50
-val OnPrimaryContainerLight = Indigo700
-
-val SecondaryLight = Emerald500
-val OnSecondaryLight = Color.White
-
-val BackgroundLight = Slate50
-val SurfaceLight = Color.White
-val OnSurfaceLight = Slate900
+val md_theme_light_primary = Color(0xFF4F46E5)
+val md_theme_light_onPrimary = Color(0xFFFFFFFF)
+val md_theme_light_primaryContainer = Color(0xFFE0E7FF)
+val md_theme_light_onPrimaryContainer = Color(0xFF1E1B4B)
+val md_theme_light_secondary = Color(0xFF059669)
+val md_theme_light_onSecondary = Color(0xFFFFFFFF)
+val md_theme_light_background = Color(0xFFF8FAFC)
+val md_theme_light_surface = Color(0xFFFFFFFF)
+val md_theme_light_onSurface = Color(0xFF0F172A)
+val md_theme_light_error = Color(0xFFDC2626)
 
 // Dark Theme
-val PrimaryDark = Color(0xFF818CF8)
-val OnPrimaryDark = Slate900
-val PrimaryContainerDark = Indigo700
-val OnPrimaryContainerDark = Indigo50
-
-val SecondaryDark = Color(0xFF34D399)
-val OnSecondaryDark = Slate900
-
-val BackgroundDark = Slate900
-val SurfaceDark = Slate800
-val OnSurfaceDark = Slate50
+val md_theme_dark_primary = Color(0xFF818CF8)
+val md_theme_dark_onPrimary = Color(0xFF1E1B4B)
+val md_theme_dark_primaryContainer = Color(0xFF3730A3)
+val md_theme_dark_onPrimaryContainer = Color(0xFFE0E7FF)
+val md_theme_dark_secondary = Color(0xFF34D399)
+val md_theme_dark_onSecondary = Color(0xFF064E3B)
+val md_theme_dark_background = Color(0xFF0F172A)
+val md_theme_dark_surface = Color(0xFF1E293B)
+val md_theme_dark_onSurface = Color(0xFFF1F5F9)
+val md_theme_dark_error = Color(0xFFFB7185)
