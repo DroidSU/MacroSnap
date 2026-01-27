@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.macrosnap.data.local.MealDatabase
 import com.macrosnap.data.remote.GeminiService
+import com.macrosnap.data.repository.AuthRepository
 import com.macrosnap.data.repository.MealRepository
 import com.macrosnap.ui.screen.SplashScreen
 import com.macrosnap.ui.theme.MacroSnapTheme
@@ -21,8 +22,9 @@ class MainActivity : ComponentActivity() {
 
         val database = MealDatabase.getDatabase(this)
         val geminiService = GeminiService()
-        val repository = MealRepository(geminiService, database.mealDao())
-        val viewModelFactory = MacroSnapViewModelFactory(repository)
+        val mealRepository = MealRepository(geminiService, database.mealDao())
+        val authRepository = AuthRepository()
+        val viewModelFactory = MacroSnapViewModelFactory(mealRepository, authRepository)
 
         setContent {
             MacroSnapTheme {

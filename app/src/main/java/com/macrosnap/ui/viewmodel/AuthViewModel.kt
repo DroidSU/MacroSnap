@@ -2,8 +2,6 @@ package com.macrosnap.ui.viewmodel
 
 import android.content.Context
 import android.util.Log
-import androidx.credentials.ClearCredentialStateRequest
-import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
@@ -13,12 +11,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.auth
 import com.macrosnap.BuildConfig
-import com.macrosnap.data.repository.MealRepository
+import com.macrosnap.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -32,17 +27,16 @@ sealed class AuthState {
     data class Error(val message: String) : AuthState()
 }
 
-class AuthViewModel(private val repository: MealRepository) : ViewModel() {
-    private val auth: FirebaseAuth = Firebase.auth
+class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState = _authState.asStateFlow()
 
-    val currentUser get() = auth.currentUser
+    val currentUser get() = authRepository.currentUser
 
     fun signInWithGoogle(context: Context) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            val credentialManager = CredentialManager.create(context)
+            val credentialManager = authRepository.getCredentialManager(context)
             
             val rawNonce = UUID.randomUUID().toString()
             val bytes = rawNonce.toByteArray()
@@ -94,7 +88,7 @@ class AuthViewModel(private val repository: MealRepository) : ViewModel() {
         if (googleIdTokenCredential != null) {
             val firebaseCredential = GoogleAuthProvider.getCredential(googleIdTokenCredential.idToken, null)
             try {
-                auth.signInWithCredential(firebaseCredential)
+                authRepository.signInWithCredential(firebaseCredential)
                 _authState.value = AuthState.Success
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Firebase Authentication failed")
@@ -106,9 +100,7 @@ class AuthViewModel(private val repository: MealRepository) : ViewModel() {
 
     fun signOut(context: Context) {
         viewModelScope.launch {
-            auth.signOut()
-            val credentialManager = CredentialManager.create(context)
-            credentialManager.clearCredentialState(ClearCredentialStateRequest())
+            authRepository.signOut(context)
             _authState.value = AuthState.Idle
         }
     }

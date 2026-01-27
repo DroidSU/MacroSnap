@@ -9,13 +9,17 @@ import com.macrosnap.data.repository.MealRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MealViewModel(private val repository: MealRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MealUiState>(MealUiState.Idle)
-    val uiState: StateFlow<MealUiState> = _uiState
+    val uiState: StateFlow<MealUiState> = _uiState.asStateFlow()
+
+    private val _capturedImage = MutableStateFlow<Bitmap?>(null)
+    val capturedImage: StateFlow<Bitmap?> = _capturedImage.asStateFlow()
 
     val history: StateFlow<List<MealEntity>> = repository.getAllMeals()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -25,6 +29,7 @@ class MealViewModel(private val repository: MealRepository) : ViewModel() {
 
     fun analyzeMeal(bitmap: Bitmap) {
         _uiState.value = MealUiState.Loading
+        _capturedImage.value = bitmap
         viewModelScope.launch {
             try {
                 val result = repository.analyzeMeal(bitmap)
@@ -39,13 +44,22 @@ class MealViewModel(private val repository: MealRepository) : ViewModel() {
         }
     }
 
+    fun startLoading() {
+        _uiState.value = MealUiState.Loading
+    }
+
     fun saveMeal(analysis: MealAnalysis) {
         viewModelScope.launch {
             repository.saveMeal(analysis)
         }
     }
 
+    fun setCapturedImage(bitmap: Bitmap?) {
+        _capturedImage.value = bitmap
+    }
+
     fun resetState() {
         _uiState.value = MealUiState.Idle
+        _capturedImage.value = null
     }
 }

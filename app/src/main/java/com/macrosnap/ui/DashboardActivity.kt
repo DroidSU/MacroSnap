@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.macrosnap.data.local.MealDatabase
 import com.macrosnap.data.remote.GeminiService
+import com.macrosnap.data.repository.AuthRepository
 import com.macrosnap.data.repository.MealRepository
 import com.macrosnap.ui.screen.DashboardScreen
 import com.macrosnap.ui.theme.MacroSnapTheme
@@ -22,10 +23,12 @@ class DashboardActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val database = MealDatabase.getDatabase(this)
+        val mealDatabase = MealDatabase.getDatabase(this)
         val geminiService = GeminiService()
-        val repository = MealRepository(geminiService, database.mealDao())
-        val viewModelFactory = MacroSnapViewModelFactory(repository)
+        val mealRepository = MealRepository(geminiService, mealDatabase.mealDao())
+        val authRepository = AuthRepository()
+        
+        val viewModelFactory = MacroSnapViewModelFactory(mealRepository, authRepository)
 
         setContent {
             MacroSnapTheme {
@@ -35,12 +38,17 @@ class DashboardActivity : ComponentActivity() {
                 val uiState by mealViewModel.uiState.collectAsState()
                 val history by mealViewModel.history.collectAsState()
                 val weeklyMeals by mealViewModel.weeklyMeals.collectAsState()
+                val capturedImage by mealViewModel.capturedImage.collectAsState()
 
                 DashboardScreen(
                     uiState = uiState,
                     history = history,
                     weeklyMeals = weeklyMeals,
-                    onAnalyzeMeal = { bitmap -> mealViewModel.analyzeMeal(bitmap) },
+                    capturedImage = capturedImage,
+                    onAnalyzeMeal = { bitmap -> 
+                        mealViewModel.analyzeMeal(bitmap) 
+                    },
+                    onStartLoading = { mealViewModel.startLoading() },
                     onSaveMeal = { analysis -> mealViewModel.saveMeal(analysis) },
                     onResetState = { mealViewModel.resetState() },
                     onSignOut = {

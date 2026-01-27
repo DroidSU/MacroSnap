@@ -1,9 +1,9 @@
 package com.macrosnap.data.remote
 
 import android.graphics.Bitmap
+import android.util.Log
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
-import com.google.ai.client.generativeai.type.generationConfig
 import com.macrosnap.BuildConfig
 import com.macrosnap.data.model.MealAnalysis
 import kotlinx.coroutines.Dispatchers
@@ -12,14 +12,14 @@ import kotlinx.serialization.json.Json
 
 class GeminiService {
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
-        apiKey = BuildConfig.GEMINI_API_KEY,
-        generationConfig = generationConfig {
-            responseMimeType = "application/json"
-        }
+        modelName = "gemini-2.5-flash",
+        apiKey = BuildConfig.GEMINI_API_KEY
     )
 
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json { 
+        ignoreUnknownKeys = true 
+        isLenient = true
+    }
 
     suspend fun analyzeMeal(bitmap: Bitmap): MealAnalysis? = withContext(Dispatchers.IO) {
         val prompt = """
@@ -28,6 +28,8 @@ class GeminiService {
             Provide a healthier swap if possible and a portion tweak recommendation.
             Return the result in JSON format with the following keys:
             dishName (string), calories (int), protein (int), carbs (int), fats (int), healthierSwap (string), portionTweak (string).
+            
+            IMPORTANT: Return ONLY the raw JSON object. Do not include markdown formatting or any other text.
         """.trimIndent()
 
         val inputContent = content {
@@ -37,9 +39,20 @@ class GeminiService {
 
         try {
             val response = generativeModel.generateContent(inputContent)
-            response.text?.let { json.decodeFromString<MealAnalysis>(it) }
+            var responseText = response.text?.trim() ?: return@withContext null
+            
+            // Clean markdown formatting (e.g., ```json ... ```) if the model includes it
+            if (responseText.startsWith("```")) {
+                responseText = responseText
+                    .removePrefix("```json")
+                    .removePrefix("```")
+                    .removeSuffix("```")
+                    .trim()
+            }
+
+            json.decodeFromString<MealAnalysis>(responseText)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("GeminiService", "Analysis failed: ${e.message}", e)
             null
         }
     }

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,13 +51,14 @@ fun DashboardScreen(
     uiState: MealUiState,
     history: List<MealEntity>,
     weeklyMeals: List<MealEntity>,
+    capturedImage: Bitmap?,
     onAnalyzeMeal: (Bitmap) -> Unit,
+    onStartLoading: () -> Unit,
     onSaveMeal: (MealAnalysis) -> Unit,
     onResetState: () -> Unit,
     onSignOut: () -> Unit
 ) {
     val navController = rememberNavController()
-    var capturedBitmap by remember { mutableStateOf<Bitmap?>(null) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -103,16 +105,18 @@ fun DashboardScreen(
                 modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
             ) {
                 composable("camera") {
-                    CameraScreen(onImageCaptured = { bitmap ->
-                        capturedBitmap = bitmap
-                        onAnalyzeMeal(bitmap)
-                        navController.navigate("result")
-                    })
+                    CameraScreen(
+                        onImageCaptured = { bitmap ->
+                            onStartLoading()
+                            onAnalyzeMeal(bitmap)
+                            navController.navigate("result")
+                        }
+                    )
                 }
                 composable("result") {
                     ResultScreen(
                         uiState = uiState,
-                        capturedImage = capturedBitmap,
+                        capturedImage = capturedImage,
                         onBack = {
                             onResetState()
                             navController.popBackStack()
@@ -135,7 +139,6 @@ fun DashboardScreen(
                 }
             }
 
-            // TopAppBar overlaid to remove the white background and show content behind it
             TopAppBar(
                 title = { },
                 actions = {
@@ -163,7 +166,7 @@ fun DashboardScreen(
                                 text = { Text("Help & Support") },
                                 onClick = { showMenu = false }
                             )
-                            Divider()
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                             DropdownMenuItem(
                                 text = { Text("Sign Out", color = MaterialTheme.colorScheme.error) },
                                 onClick = {
@@ -183,15 +186,6 @@ fun DashboardScreen(
     }
 }
 
-@Composable
-fun Divider() {
-    androidx.compose.material3.HorizontalDivider(
-        modifier = Modifier.padding(vertical = 4.dp),
-        thickness = 0.5.dp,
-        color = MaterialTheme.colorScheme.outlineVariant
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
 fun DashboardScreenPreview() {
@@ -200,7 +194,9 @@ fun DashboardScreenPreview() {
             uiState = MealUiState.Idle,
             history = emptyList(),
             weeklyMeals = emptyList(),
+            capturedImage = null,
             onAnalyzeMeal = {},
+            onStartLoading = {},
             onSaveMeal = {},
             onResetState = {},
             onSignOut = {}
