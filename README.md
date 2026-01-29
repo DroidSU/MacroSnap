@@ -77,6 +77,6 @@ MacroSnap adopts the latest **Credential Manager API**, providing a unified sign
 
 ## 👨‍💻 Author
 
-**Sujoy** - [Your Portfolio/LinkedIn Link]
+**Sujoy Dutta** -
 
 *Project developed as a showcase of modern Android development practices, AI integration, and high-quality UI design.*
