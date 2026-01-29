@@ -10,8 +10,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+enum class SortOrder {
+    DATE_DESC, DATE_ASC, ALPHABETICAL_ASC, ALPHABETICAL_DESC
+}
 
 class MealViewModel(private val repository: MealRepository) : ViewModel() {
 
@@ -21,7 +26,18 @@ class MealViewModel(private val repository: MealRepository) : ViewModel() {
     private val _capturedImage = MutableStateFlow<Bitmap?>(null)
     val capturedImage: StateFlow<Bitmap?> = _capturedImage.asStateFlow()
 
+    private val _sortOrder = MutableStateFlow(SortOrder.DATE_DESC)
+    val sortOrder: StateFlow<SortOrder> = _sortOrder.asStateFlow()
+
     val history: StateFlow<List<MealEntity>> = repository.getAllMeals()
+        .combine(_sortOrder) { meals, order ->
+            when (order) {
+                SortOrder.DATE_DESC -> meals.sortedByDescending { it.timestamp }
+                SortOrder.DATE_ASC -> meals.sortedBy { it.timestamp }
+                SortOrder.ALPHABETICAL_ASC -> meals.sortedBy { it.dishName }
+                SortOrder.ALPHABETICAL_DESC -> meals.sortedByDescending { it.dishName }
+            }
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val weeklyMeals: StateFlow<List<MealEntity>> = repository.getWeeklyMeals()
@@ -50,8 +66,18 @@ class MealViewModel(private val repository: MealRepository) : ViewModel() {
 
     fun saveMeal(analysis: MealAnalysis) {
         viewModelScope.launch {
-            repository.saveMeal(analysis)
+            repository.saveMeal(analysis, _capturedImage.value)
         }
+    }
+
+    fun deleteMeal(meal: MealEntity) {
+        viewModelScope.launch {
+            repository.deleteMeal(meal)
+        }
+    }
+
+    fun setSortOrder(order: SortOrder) {
+        _sortOrder.value = order
     }
 
     fun setCapturedImage(bitmap: Bitmap?) {

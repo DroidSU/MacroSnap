@@ -25,7 +25,7 @@ class DashboardActivity : ComponentActivity() {
 
         val mealDatabase = MealDatabase.getDatabase(this)
         val geminiService = GeminiService()
-        val mealRepository = MealRepository(geminiService, mealDatabase.mealDao())
+        val mealRepository = MealRepository(geminiService, mealDatabase.mealDao(), this)
         val authRepository = AuthRepository()
         
         val viewModelFactory = MacroSnapViewModelFactory(mealRepository, authRepository)
@@ -34,22 +34,23 @@ class DashboardActivity : ComponentActivity() {
             MacroSnapTheme {
                 val mealViewModel: MealViewModel = viewModel(factory = viewModelFactory)
                 val authViewModel: AuthViewModel = viewModel(factory = viewModelFactory)
-                
+
                 val uiState by mealViewModel.uiState.collectAsState()
                 val history by mealViewModel.history.collectAsState()
                 val weeklyMeals by mealViewModel.weeklyMeals.collectAsState()
                 val capturedImage by mealViewModel.capturedImage.collectAsState()
+                val sortOrder by mealViewModel.sortOrder.collectAsState()
 
                 DashboardScreen(
                     uiState = uiState,
                     history = history,
                     weeklyMeals = weeklyMeals,
                     capturedImage = capturedImage,
-                    onAnalyzeMeal = { bitmap -> 
-                        mealViewModel.analyzeMeal(bitmap) 
-                    },
-                    onStartLoading = { mealViewModel.startLoading() },
+                    sortOrder = sortOrder,
+                    onAnalyzeMeal = { bitmap -> mealViewModel.analyzeMeal(bitmap) },
                     onSaveMeal = { analysis -> mealViewModel.saveMeal(analysis) },
+                    onDeleteMeal = { meal -> mealViewModel.deleteMeal(meal) },
+                    onSortOrderChange = { order -> mealViewModel.setSortOrder(order) },
                     onResetState = { mealViewModel.resetState() },
                     onSignOut = {
                         authViewModel.signOut(this)

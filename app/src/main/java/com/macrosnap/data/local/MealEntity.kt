@@ -11,5 +11,6 @@ data class MealEntity(
     val protein: Int,
     val carbs: Int,
     val fats: Int,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val imagePath: String? = null
 )

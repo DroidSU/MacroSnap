@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
 
         val database = MealDatabase.getDatabase(this)
         val geminiService = GeminiService()
-        val mealRepository = MealRepository(geminiService, database.mealDao())
+        val mealRepository = MealRepository(geminiService, database.mealDao(), this)
         val authRepository = AuthRepository()
         val viewModelFactory = MacroSnapViewModelFactory(mealRepository, authRepository)
 
